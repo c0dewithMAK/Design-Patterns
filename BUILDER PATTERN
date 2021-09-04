@@ -1,0 +1,124 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+
+class Robot          // The actual entity for which we create Builder
+{
+public:
+    void setRobotHead(const string& h){
+        head = h;
+    }
+    void setRobotArms(const string& a){
+        arms = a;
+    }
+    void setRobotTorso(const string& t){
+        torso = t;
+    }
+    void setRobotLegs(const string& l){
+        legs = l;
+    }
+    const string getRobot(){
+        return ( "Head - " + head + ", Torso - " + torso + ", Arms - " + arms
+                + ", Legs - " + legs + "\n");
+    }
+    
+private:
+    string head;
+    string torso;
+    string arms;
+    string legs;
+};
+
+class RobotBuilder   // This is the abstract builder interface
+{
+public:
+    virtual void buildRobotHead() = 0;
+    virtual void buildRobotArms() = 0;
+    virtual void buildRobotTorso() = 0;
+    virtual void buildRobotLegs() = 0;
+    Robot getRobot(){
+        return robot;
+    }
+    virtual ~RobotBuilder(){ }
+protected:
+    Robot robot;
+};
+
+// Concrete Builder 1
+class OldStyleRobotBuilder : public RobotBuilder{
+public:
+    void buildRobotHead(){
+        robot.setRobotHead("Square-shaped");
+    }
+    void buildRobotArms(){
+        robot.setRobotArms("Rod-like");
+    }
+    void buildRobotTorso(){
+        robot.setRobotTorso("Half-Pant");
+    }
+    void buildRobotLegs(){
+        robot.setRobotLegs("Hinged");
+    }
+};
+
+// Concrete Builder 2
+class NewStyleRobotBuilder : public RobotBuilder{
+public:
+    void buildRobotHead(){
+        robot.setRobotHead("Oval-shaped");
+    }
+    void buildRobotArms(){
+        robot.setRobotArms("Dynamic-shaped");
+    }
+    void buildRobotTorso(){
+        robot.setRobotTorso("Jeans");
+    }
+    void buildRobotLegs(){
+        robot.setRobotLegs("Flexible");
+    }
+};
+
+// Responsible for managing the correct sequence of robot creation
+class Director{
+
+public:
+    Director():build(NULL){ }
+    ~Director(){
+        if( build )
+            delete build;
+    }
+    
+    void makeRobot(RobotBuilder *b){
+        if( build )
+            delete build;
+        build = b;
+        build->buildRobotHead();
+        build->buildRobotArms();
+        build->buildRobotTorso();
+        build->buildRobotLegs();
+    }
+    
+    Robot getRobot(){
+        return build->getRobot();
+    }
+    
+private:
+    RobotBuilder *build;
+};
+
+// Client Code
+int main()
+{
+    Director d;
+    d.makeRobot(new OldStyleRobotBuilder);
+    Robot robot = d.getRobot();
+    cout << "Old Style Robot - " << robot.getRobot() << "\n";
+    
+   
+    d.makeRobot(new NewStyleRobotBuilder);
+    robot = d.getRobot();
+    cout << "New Style Robot - " << robot.getRobot() << "\n";
+    
+    return 0;
+}
