@@ -1,0 +1,100 @@
+#include <iostream>
+using namespace std;
+
+struct Robot{
+    struct Search   // Interface for search strategy
+    {
+        virtual void applyStrategy(Robot &r) = 0;
+        virtual ~Search() = default;
+    };
+    struct Attack // Interface for attack strategy
+    {
+        virtual void applyStrategy(Robot &r) = 0;
+        virtual ~Attack() = default;
+    };
+    struct Defend // Interface for defend strategy
+    {
+        virtual void applyStrategy(Robot &r) = 0;
+        virtual ~Defend() = default;
+    };
+
+    Robot(Search *search, Attack *attack, Defend *defend)
+            : m_search(search), m_attack(attack), m_defend(defend){}
+    
+    void search(){
+        m_search->applyStrategy(*this);
+    }
+    void attack(){
+        m_attack->applyStrategy(*this);
+    }
+    void defend(){
+        m_defend->applyStrategy(*this);
+    }
+
+private:
+    Search *m_search;
+    Attack *m_attack;
+    Defend *m_defend;
+};
+
+// Now define the concrete strategies (algorithms)
+struct Linear : Robot::Search{
+    virtual void applyStrategy(Robot &r){
+        cout << "Linear Search !" << "\n";
+    }
+};
+
+struct Spiral : Robot::Search{
+    virtual void applyStrategy(Robot &r){
+        cout << "Spiral Search !" << "\n";
+    }
+};
+
+struct Pinch : Robot::Attack{
+    virtual void applyStrategy(Robot& r){
+        cout << "Pinch Attack !" << "\n";
+    }
+};
+
+struct Punch : Robot::Attack{
+    virtual void applyStrategy(Robot& r){
+        cout << "Punch Attack !" << "\n";
+    }
+};
+
+struct Run : Robot::Defend{
+    virtual void applyStrategy(Robot& r){
+        cout << "Run Defend !" << "\n";
+    }
+};
+
+struct Block : Robot::Defend{
+    virtual void applyStrategy(Robot& r){
+        cout << "Block Defend !" << "\n";
+    }
+};
+
+
+void go(Robot& robot){
+    robot.search();
+    robot.attack();
+    robot.defend();
+}
+
+int main(){
+    // Create some strategies/algorithms
+    Linear linear;
+    Spiral spiral;
+    Pinch pinch;
+    Punch punch;
+    Run run;
+    Block block;
+
+    // Now we don't need to call robot explicitly for each strategy as they are already composed
+    Robot r1(&linear, &punch, &block);
+    Robot r2(&spiral, &pinch, &run);
+    go(r1);
+    cout << "\n";
+    go(r2);
+}
+
