@@ -1,0 +1,93 @@
+#include <iostream>
+#include <functional>
+using namespace std;
+
+struct Robot{
+    
+    using Search = function<void(Robot&)>;
+    using Attack = function<void(Robot&)>;
+    using Defend = function<void(Robot&)>;
+    
+    Robot(Search search, Attack attack, Defend defend)
+            : m_search(search), m_attack(attack), m_defend(defend){}
+    
+    void search(){
+        m_search(*this);
+    }
+    void attack(){
+        m_attack(*this);
+    }
+    void defend(){
+        m_defend(*this);
+    }
+
+private:
+    Search m_search;
+    Attack m_attack;
+    Defend m_defend;
+};
+
+// Now define the concrete strategies (algorithms)
+struct Linear : Robot::Search{
+    void operator()(Robot &r){
+        cout << "Linear Search !" << "\n";
+    }
+};
+
+struct Spiral : Robot::Search{
+    void operator()(Robot &r){
+        cout << "Spiral Search !" << "\n";
+    }
+};
+
+struct Pinch : Robot::Attack{
+    void operator()(Robot& r){
+        cout << "Pinch Attack !" << "\n";
+    }
+};
+
+struct Punch : Robot::Attack{
+    void operator()(Robot& r){
+        cout << "Punch Attack !" << "\n";
+    }
+};
+
+struct Run : Robot::Defend{
+    void operator()(Robot& r){
+        cout << "Run Defend !" << "\n";
+    }
+};
+
+struct Block : Robot::Defend{
+    void operator()(Robot& r){
+        cout << "Block Defend !" << "\n";
+    }
+};
+
+
+void go(Robot& robot){
+    robot.search();
+    robot.attack();
+    robot.defend();
+}
+
+int main(){
+    // Create some strategies/algorithms
+    Linear linear;
+    Spiral spiral;
+    Pinch pinch;
+    Punch punch;
+    Run run;
+    Block block;
+
+    // Now we don't need to call robot explicitly for each strategy as they are already composed
+    Robot r1(linear, punch, block);
+    Robot r2(spiral, pinch, run);
+    Robot r3(spiral, pinch, [](Robot &r){ cout << "Lambda Run Strategy !"; });
+    go(r1);
+    cout << "\n";
+    go(r2);
+    cout << "\n";
+    go(r3);
+}
+
