@@ -1,0 +1,109 @@
+#include <iostream>
+#include <iterator>
+#include <unordered_set>
+using namespace std;
+#define MAX_LIMIT 50
+
+class Publisher;
+class Listener
+{
+public:
+    Listener(){}
+    virtual void onEvent(const string&) = 0;
+    virtual void getRegistered(Publisher&) = 0;
+    virtual ~Listener(){}
+};
+
+class Publisher
+{
+public:
+    Publisher(){}
+    ~Publisher(){
+        if( !subscribers.empty() ){
+            cout << "Publisher getting deleted !\n";
+            subscribers.clear();
+        }
+    }
+    int addSubscriber(Listener *subscriber){
+        if( subscribers.find(subscriber) != subscribers.end() ){
+            cout << "Already Subscribed !\n";
+            return 1;
+        }
+        if( 50 == subscribers.size() ){
+            cout << "MAX LIMIT REACHED !\n";
+            return -1;
+        }
+        subscribers.insert(subscriber);
+        return 1;
+    }
+    void notifySubscribers(){
+        cout << "___________________________________________________\n";
+        for( Listener *subs : subscribers)
+        {
+            subs->onEvent("Hey there, something has changed !\n");
+        }
+        cout << "___________________________________________________\n";
+    
+    }
+    void removeSubscriber(Listener* sub){
+        if( subscribers.find(sub) != subscribers.end() ){
+            subscribers.erase(sub);
+            cout << "Subscriber removed\n";
+        }
+        else{
+            cout << "Subscriber not found in Publisher's data\n";
+        }
+    }
+private:
+    unordered_set<Listener *> subscribers;
+};
+
+class SubscriberA : public Listener
+{
+public:
+    SubscriberA(){}
+    void getRegistered(Publisher& pub){
+        cout << "Registering Subscriber A with Publisher...\n";
+        if( pub.addSubscriber(this) < 0 ){
+            cout << "Registration Failed !\n";
+            exit(-1);
+        }
+        cout << "Registration Successful !\n";
+    }
+    virtual void onEvent(const string& message){
+        cout << message;
+    }
+};
+
+class SubscriberB : public Listener
+{
+public:
+    SubscriberB(){}
+    void getRegistered(Publisher& pub){
+        cout << "Registering Subscriber B with Publisher...\n";
+        if( pub.addSubscriber(this) < 0 ){
+            cout << "Registration Failed !\n";
+            exit(-1);
+        }
+        cout << "Registration Successful !\n";
+    }
+    virtual void onEvent(const string& message){
+        cout << message;
+    }
+};
+
+int main(){
+    // Driver code
+    Publisher pub;
+    Listener *subA = new SubscriberA;
+    subA->getRegistered(pub);
+
+    Listener *subB = new SubscriberB;
+    subB->getRegistered(pub);
+    
+    pub.notifySubscribers();
+    pub.removeSubscriber(subA);
+    delete subA;
+    delete subB;
+    return 0;
+}
